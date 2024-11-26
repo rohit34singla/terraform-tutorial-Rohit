@@ -1,41 +1,45 @@
-# Security Group to allow SSH and HTTP access
+
 resource "aws_security_group" "my_security_group" {
-  name_prefix = "allow_access_"
-
-  # Ingress rules
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = [var.ssh_allowed_cidr] # Restrict SSH access
+  for_each = { # Create multiple security groups based on this map
+    "ssh"  = { from_port = 22, to_port = 22, protocol = "tcp", cidr = var.ssh_allowed_cidr }
+    "http" = { from_port = 80, to_port = 80, protocol = "tcp", cidr = "0.0.0.0/0" }
   }
 
+  name_prefix = "allow_access_${each.key}_"
+
   ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # Open HTTP (80) to the public
+    from_port   = each.value.from_port
+    to_port     = each.value.to_port
+    protocol    = each.value.protocol
+    cidr_blocks = [each.value.cidr]
   }
 
-  # Egress rules
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  tags = {
+    Name = "MySecurityGroup-${each.key}"
+  }
 }
 
-# EC2 Instance
 resource "aws_instance" "my_ec2_instance" {
+  count = var.enable_instance ? var.instance_count : 0
   ami           = var.ami_id
   instance_type = var.instance_type
   key_name      = var.key_name
+  provider      = aws
 
-  # Associate security group
-  vpc_security_group_ids = [aws_security_group.my_security_group.id]
+  # Attach security groups dynamically
+  vpc_security_group_ids = values(aws_security_group.my_security_group)[*].id
 
-  # User data to configure Docker and NGINX
   user_data = <<EOF
 #!/bin/bash
 set -e  # Exit on any error
@@ -53,13 +57,15 @@ docker pull nginx:alpine
 docker run -d --name my-first-container -p 80:80 nginx:alpine
 EOF
 
-  # Tags
+  depends_on = [aws_security_group.my_security_group]
+
   tags = {
-    Name = "MyEC2Instance-Docker"
+    Name = "MyEC2Instance-${count.index}"
   }
 }
 
-# Output EC2 Public IP
-output "ec2_public_ip" {
-  value = aws_instance.my_ec2_instance.public_ip
+# Output EC2 Public IPs
+output "ec2_public_ips" {
+  value       = [for instance in aws_instance.my_ec2_instance : instance.public_ip]
+  description = "Public IPs of all created EC2 instances"
 }

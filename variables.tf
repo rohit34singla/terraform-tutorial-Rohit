@@ -22,3 +22,13 @@ variable "ssh_allowed_cidr" {
   description = "CIDR block allowed for SSH access"
   default     = "0.0.0.0/0" # Replace with your IP, e.g., "203.0.113.0/32"
 }
+
+variable "instance_count" {
+  description = "Number of EC2 instances to create"
+  default     = 2
+}
+
+variable "enable_instance" {
+  description = "Boolean to enable instance creation"
+  default     = true
+}
