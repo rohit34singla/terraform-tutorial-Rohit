@@ -1,34 +1,34 @@
-variable "region" {
-  description = "The AWS region to deploy resources"
-  default     = "ca-central-1" # Update as needed
-}
-
 variable "ami_id" {
-  description = "Amazon Machine Image ID for the EC2 instance"
-  default     = "ami-0bcda2433f3dabc41" # Replace with a valid AMI ID for your region
+  description = "Custom AMI ID to use for the EC2 instance. Leave empty to use the default Amazon Linux 2 AMI."
+  default     = ""
 }
 
 variable "instance_type" {
-  description = "The type of instance to launch"
-  default     = "t2.micro"
+  description = "Mapping of instance types per environment"
+  default     = {
+    default = "t2.micro"
+    dev     = "t2.micro"
+    prod    = "t2.medium"
+  }
 }
 
 variable "key_name" {
   description = "Name of the SSH key pair"
-  default     = "docker" # Replace with your key pair name
+  default     = "docker"
 }
 
-variable "ssh_allowed_cidr" {
-  description = "CIDR block allowed for SSH access"
-  default     = "0.0.0.0/0" # Replace with your IP, e.g., "203.0.113.0/32"
-}
-
-variable "instance_count" {
+variable "aws_instance_count" {
   description = "Number of EC2 instances to create"
-  default     = 2
+  default     = 1
 }
 
-variable "enable_instance" {
-  description = "Boolean to enable instance creation"
-  default     = true
+variable "package_name" {
+  description = "Package name to install in user data script"
+  default     = "nginx"
+}
+
+variable "region" {
+  description = "Canada region"
+  default = "ca-central-1"
+  
 }
