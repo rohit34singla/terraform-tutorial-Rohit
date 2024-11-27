@@ -12,12 +12,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Git
+      - name: Authenticate with GitHub Token
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
 
-      - name: Create a new tag
+      - name: Create and Push a New Tag
         run: |
           git tag -a v$(date +'%Y.%m.%d.%H%M%S') -m "Auto version tag"
           git push origin --tags
