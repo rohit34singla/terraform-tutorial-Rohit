@@ -1,0 +1,23 @@
+name: Auto Version Tagging
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create a new tag
+        run: |
+          git tag -a v$(date +'%Y.%m.%d.%H%M%S') -m "Auto version tag"
+          git push origin --tags
