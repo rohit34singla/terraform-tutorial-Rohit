@@ -23,11 +23,12 @@ jobs:
       - name: Get the Latest Commit Message
         id: get_message
         run: |
-          echo "commit_message=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
+          echo "COMMIT_MESSAGE=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
 
       - name: Create and Push a New Tag
         env:
-          COMMIT_MESSAGE: ${{ env.commit_message }}
+          COMMIT_MESSAGE: ${{ env.COMMIT_MESSAGE }}
         run: |
-          git tag -a v$(date +'%Y.%m.%d.%H%M%S') -m "$COMMIT_MESSAGE"
-          git push origin --tags
+          TAG_NAME="v$(date +'%Y.%m.%d.%H%M%S')"
+          git tag -a $TAG_NAME -m "$COMMIT_MESSAGE"
+          git push origin $TAG_NAME
