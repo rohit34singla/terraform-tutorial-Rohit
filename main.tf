@@ -1,4 +1,4 @@
-resource "aws_instance" "example" {
+resource "aws_instance" "EC2" {
   ami           = var.ami_id
   instance_type = var.instance_type
   key_name      = var.key_name    # Reference the existing key pair name
@@ -58,5 +58,5 @@ resource "aws_security_group" "ssh" {
 # Output the public IP of the EC2 instance
 output "instance_public_ip" {
   description = "The public IP address of the EC2 instance"
-  value       = aws_instance.example.public_ip
+  value       = aws_instance.EC2.public_ip
 }
